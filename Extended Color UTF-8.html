@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Extended Color UTF-8</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#1b1b1d;--panel:#252528;--raised:#2e2e32;--line:#3a3a40;--text:#ececef;--mute:#9a9aa3;--me:#6a5af9;--bot:#2e2e32;--acc:#ffd23f;color-scheme:dark;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+
+
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font:400 16px/1.45 "Bricolage Grotesque",system-ui,sans-serif;display:flex;justify-content:center}
+.app{width:100%;max-width:760px;height:100%;display:flex;flex-direction:column;gap:12px;padding:14px}
+h1{font-size:1.35rem;font-weight:800;margin:0;letter-spacing:-.01em}
+h1 span{color:var(--mute);font-weight:400;font-size:.9rem;margin-left:8px}
+.table{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.table h2,.chat h2{font-size:.85rem;font-weight:600;color:var(--mute);margin:0 0 10px}
+.grid{display:flex;flex-wrap:wrap;gap:8px}
+.cell{display:flex;align-items:center;gap:8px;background:var(--raised);border:1px solid var(--line);color:var(--text);padding:7px 12px 7px 8px;border-radius:12px;font:inherit;font-size:.9rem;cursor:pointer;transition:transform .12s,border-color .12s}
+.cell:hover{border-color:var(--acc);transform:translateY(-1px)}
+.cell:focus-visible,#msg:focus-visible,#send:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.cell i{width:22px;height:22px;border-radius:7px;border:1px solid rgba(128,128,128,.5);display:block}
+.cell small{color:var(--mute);font-size:.72rem}
+.op{font-weight:800;font-size:1.2rem;padding:3px 16px;justify-content:center}
+.sep{width:1px;background:var(--line);margin:0 4px}
+.chat{flex:1;min-height:0;background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:0 8px 24px rgba(0,0,0,.35);display:flex;flex-direction:column;overflow:hidden}
+.chat h2{padding:12px 14px 0}
+#feed{flex:1;overflow-y:auto;padding:6px 14px 14px;display:flex;flex-direction:column;gap:8px}
+.b{max-width:80%;padding:8px 12px;border-radius:16px;word-wrap:break-word;white-space:pre-wrap;line-height:1.7}
+.b.me{align-self:flex-end;background:var(--me);color:#fff;border-bottom-right-radius:4px}
+.b.bot{align-self:flex-start;background:var(--bot);border-bottom-left-radius:4px}
+.sw{display:inline-block;position:relative;width:1.35em;height:1.35em;border-radius:.4em;border:1.5px solid rgba(255,255,255,.55);box-shadow:0 0 0 1px rgba(0,0,0,.35);vertical-align:-.3em;margin:0 2px}
+.sw:hover::after,.sw:focus::after{content:attr(data-hex);position:absolute;bottom:130%;left:50%;transform:translateX(-50%);background:#000;color:#fff;font:600 .75rem system-ui,sans-serif;padding:3px 7px;border-radius:6px;white-space:nowrap;z-index:5}
+#preview{display:none;margin:0 10px;padding:8px 12px;background:var(--raised);border:1px solid var(--line);border-radius:12px 12px 0 0;font-size:.85rem;gap:14px;flex-wrap:wrap;align-items:center}
+#preview.on{display:flex}
+#preview .p{display:flex;align-items:center;gap:8px}
+#preview .p .sw{width:26px;height:26px;margin:0}
+#preview code{font:600 .85rem ui-monospace,monospace}
+.bar{display:flex;gap:8px;padding:0 10px 10px}
+#msg{flex:1;min-width:0;background:var(--raised);color:var(--text);border:1px solid var(--line);border-radius:22px;padding:11px 16px;font:inherit}
+#send{background:var(--acc);color:#1b1b1d;border:0;border-radius:22px;padding:0 22px;font-weight:800;font-size:1rem;font-family:inherit;cursor:pointer;transition:filter .12s}
+#send:hover{filter:brightness(1.08)}
+.hint{padding:0 14px 10px;color:var(--mute);font-size:.75rem}
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>Extended Color UTF-8<span>type a pigment formula, send a color</span></h1>
+
+  <section class="table" aria-label="Extended character table">
+    <h2>Extended character table</h2>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section class="chat" aria-label="Mock chat">
+    <h2>Chat</h2>
+    <div id="feed" aria-live="polite"></div>
+    <div id="preview"></div>
+    <div class="bar">
+      <input id="msg" autocomplete="off" placeholder="Try [Yellow]+[Yellow]+[Red]-[Yellow] 🎨" aria-label="Message">
+      <button id="send">Send</button>
+    </div>
+    <div class="hint">Each pigment adds one part, each − removes one part. Order doesn’t matter.</div>
+  </section>
+</div>
+
+<script>
+const P = {
+  Yellow:{hex:"#FFFF00",ryb:[0,1,0]},
+  Red:{hex:"#FF0000",ryb:[1,0,0]},
+  Blue:{hex:"#0000FF",ryb:[0,0,1]},
+  Cyan:{hex:"#00FFFF",ryb:[0,.5,1]},
+  Magenta:{hex:"#FF00FF",ryb:[1,0,.5]},
+  White:{hex:"#FFFFFF"},
+  Black:{hex:"#000000"}
+};
+// RYB cube corners (r,y,b): white, blue, yellow, green, red, purple, orange, black
+const CUBE={"000":[255,255,255],"001":[41,95,153],"010":[255,255,0],"011":[0,168,51],
+"100":[255,0,0],"101":[128,0,128],"110":[255,128,0],"111":[51,24,0]};
+function rybToRgb(r,y,b){
+  const out=[0,0,0];
+  for(const k in CUBE){
+    const w=(k[0]=="1"?r:1-r)*(k[1]=="1"?y:1-y)*(k[2]=="1"?b:1-b);
+    for(let i=0;i<3;i++) out[i]+=w*CUBE[k][i];
+  }
+  return out;
+}
+const hex=c=>"#"+c.map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,"0")).join("").toUpperCase();
+const NAMES="Yellow|Red|Blue|Cyan|Magenta|White|Black";
+const FORMULA=new RegExp("\\[(?:"+NAMES+")\\](?:\\s*[+\\-]\\s*\\[(?:"+NAMES+")\\])*","gi");
+const TERM=new RegExp("([+\\-])?\\s*\\[("+NAMES+")\\]","gi");
+const norm=s=>s[0].toUpperCase()+s.slice(1).toLowerCase();
+
+function mix(formula){
+  const w={}; let m;
+  TERM.lastIndex=0;
+  while((m=TERM.exec(formula))){
+    const n=norm(m[2]); w[n]=(w[n]||0)+(m[1]==="-"?-1:1);
+  }
+  const act=Object.entries(w).filter(([,v])=>v>0);
+  if(!act.length) return null;               // everything cancelled out
+  if(act.length===1) return P[act[0][0]].hex; // a single pigment stays pure
+  let wc=0,ww=0,wb=0,ryb=[0,0,0];
+  for(const [n,v] of act){
+    if(n==="White") ww+=v; else if(n==="Black") wb+=v;
+    else{ wc+=v; for(let i=0;i<3;i++) ryb[i]+=v*P[n].ryb[i]; }
+  }
+  const tot=wc+ww+wb;
+  const C=wc?rybToRgb(...ryb.map(x=>x/wc)):[0,0,0];
+  return hex([0,1,2].map(i=>(wc*C[i]+ww*255)/tot));
+}
+
+const $=id=>document.getElementById(id);
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const swatch=h=>`<span class="sw" tabindex="0" style="background:${h}" data-hex="${h}" title="${h}"></span>`;
+
+// character table
+const grid=$("grid");
+Object.entries(P).forEach(([n,p])=>{
+  grid.insertAdjacentHTML("beforeend",`<button class="cell" data-ins="[${n}]"><i style="background:${p.hex}"></i>${n}<small>${p.hex}</small></button>`);
+});
+grid.insertAdjacentHTML("beforeend",`<span class="sep"></span><button class="cell op" data-ins="+" aria-label="Add">+</button><button class="cell op" data-ins="-" aria-label="Subtract">−</button>`);
+grid.addEventListener("click",e=>{
+  const b=e.target.closest("[data-ins]"); if(!b) return;
+  const i=$("msg"),s=i.selectionStart??i.value.length,t=i.selectionEnd??s;
+  i.value=i.value.slice(0,s)+b.dataset.ins+i.value.slice(t);
+  const pos=s+b.dataset.ins.length; i.focus(); i.setSelectionRange(pos,pos); update();
+});
+
+// live preview
+function update(){
+  const pv=$("preview"), found=$("msg").value.match(FORMULA)||[];
+  const items=found.map(f=>{const h=mix(f);return h?`<span class="p">${swatch(h)}<code>${h}</code></span>`:`<span class="p"><code>${esc(f)} → nothing left</code></span>`});
+  pv.innerHTML=items.join("");
+  pv.classList.toggle("on",items.length>0);
+}
+$("msg").addEventListener("input",update);
+
+// send
+function render(text){
+  let out="",last=0,m;
+  FORMULA.lastIndex=0;
+  while((m=FORMULA.exec(text))){
+    out+=esc(text.slice(last,m.index));
+    const h=mix(m[0]); out+=h?swatch(h):"";
+    last=m.index+m[0].length;
+  }
+  return out+esc(text.slice(last));
+}
+function add(html,who){
+  const d=document.createElement("div"); d.className="b "+who; d.innerHTML=html;
+  $("feed").appendChild(d); $("feed").scrollTop=$("feed").scrollHeight;
+}
+function send(){
+  const v=$("msg").value.trim(); if(!v) return;
+  add(render(v),"me"); $("msg").value=""; update();
+}
+$("send").addEventListener("click",send);
+$("msg").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();send();}});
+
+add("Pick pigments from the table above and combine them with + and −. Your formula turns into a color swatch when you send it. Try <b>[Blue]+[Yellow]</b> or <b>[Red]+[White]</b>.","bot");
+</script>
+</body>
+</html>
