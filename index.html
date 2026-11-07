@@ -6,10 +6,8 @@
 <title>Extended Color UTF-8</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
 <style>
-:root{--bg:#1b1b1d;--panel:#252528;--raised:#2e2e32;--line:#3a3a40;--text:#ececef;--mute:#9a9aa3;--me:#6a5af9;--bot:#2e2e32;--acc:#ffd23f;color-scheme:dark;
+:root{--bg:#1b1b1d;--panel:#252528;--raised:#2e2e32;--line:#3a3a40;--text:#ececef;--mute:#9a9aa3;--me:#6a5af9;--bot:#2e2e32;--acc:#ffd23f;--bad:#ff5470;color-scheme:dark;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-
-
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--text);font:400 16px/1.45 "Bricolage Grotesque",system-ui,sans-serif;display:flex;justify-content:center}
@@ -19,10 +17,13 @@ h1 span{color:var(--mute);font-weight:400;font-size:.9rem;margin-left:8px}
 .table{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
 .table h2,.chat h2{font-size:.85rem;font-weight:600;color:var(--mute);margin:0 0 10px}
 .grid{display:flex;flex-wrap:wrap;gap:8px}
-.cell{display:flex;align-items:center;gap:8px;background:var(--raised);border:1px solid var(--line);color:var(--text);padding:7px 12px 7px 8px;border-radius:12px;font:inherit;font-size:.9rem;cursor:pointer;transition:transform .12s,border-color .12s}
+.cell{display:flex;align-items:center;gap:8px;background:var(--raised);border:1px solid var(--line);color:var(--text);padding:7px 12px 7px 8px;border-radius:12px;font:inherit;font-size:.9rem;cursor:pointer;transition:transform .12s,border-color .12s,opacity .12s}
 .cell:hover{border-color:var(--acc);transform:translateY(-1px)}
-.cell:focus-visible,#msg:focus-visible,#send:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
-.cell i{width:22px;height:22px;border-radius:7px;border:1px solid rgba(128,128,128,.5);display:block}
+.cell[data-off]{opacity:.35;cursor:not-allowed;transform:none}
+.cell[data-off]:hover{border-color:var(--line)}
+.cell:focus-visible,#send:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+#msg:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+.cell i{width:22px;height:22px;border-radius:7px;border:1px solid rgba(255,255,255,.4);display:block}
 .cell small{color:var(--mute);font-size:.72rem}
 .op{font-weight:800;font-size:1.2rem;padding:3px 16px;justify-content:center}
 .sep{width:1px;background:var(--line);margin:0 4px}
@@ -32,23 +33,34 @@ h1 span{color:var(--mute);font-weight:400;font-size:.9rem;margin-left:8px}
 .b{max-width:80%;padding:8px 12px;border-radius:16px;word-wrap:break-word;white-space:pre-wrap;line-height:1.7}
 .b.me{align-self:flex-end;background:var(--me);color:#fff;border-bottom-right-radius:4px}
 .b.bot{align-self:flex-start;background:var(--bot);border-bottom-left-radius:4px}
-.sw{display:inline-block;position:relative;width:1.35em;height:1.35em;border-radius:.4em;border:1.5px solid rgba(255,255,255,.55);box-shadow:0 0 0 1px rgba(0,0,0,.35);vertical-align:-.3em;margin:0 2px}
+.sw{display:inline-block;position:relative;width:1.45em;height:1.45em;border-radius:.4em;border:1.5px solid rgba(255,255,255,.55);box-shadow:0 0 0 1px rgba(0,0,0,.35);vertical-align:-.35em;margin:0 2px}
+.sw.nil{background:transparent;border-style:dashed}
 .sw:hover::after,.sw:focus::after{content:attr(data-hex);position:absolute;bottom:130%;left:50%;transform:translateX(-50%);background:#000;color:#fff;font:600 .75rem system-ui,sans-serif;padding:3px 7px;border-radius:6px;white-space:nowrap;z-index:5}
 #preview{display:none;margin:0 10px;padding:8px 12px;background:var(--raised);border:1px solid var(--line);border-radius:12px 12px 0 0;font-size:.85rem;gap:14px;flex-wrap:wrap;align-items:center}
 #preview.on{display:flex}
 #preview .p{display:flex;align-items:center;gap:8px}
 #preview .p .sw{width:26px;height:26px;margin:0}
+#preview .warn{color:var(--bad);font-weight:600}
 #preview code{font:600 .85rem ui-monospace,monospace}
-.bar{display:flex;gap:8px;padding:0 10px 10px}
-#msg{flex:1;min-width:0;background:var(--raised);color:var(--text);border:1px solid var(--line);border-radius:22px;padding:11px 16px;font:inherit}
-#send{background:var(--acc);color:#1b1b1d;border:0;border-radius:22px;padding:0 22px;font-weight:800;font-size:1rem;font-family:inherit;cursor:pointer;transition:filter .12s}
+.bar{display:flex;gap:8px;padding:0 10px 6px;align-items:flex-end}
+#msg{flex:1;min-width:0;min-height:46px;max-height:110px;overflow-y:auto;background:var(--raised);color:var(--text);border:1px solid var(--line);border-radius:23px;padding:9px 16px;line-height:1.9;white-space:pre-wrap;word-break:break-word;outline:none}
+#msg:empty::before{content:attr(data-ph);color:var(--mute);pointer-events:none}
+.tk{user-select:all;-webkit-user-select:all}
+.tk.c{display:inline-block;width:1.45em;height:1.45em;border-radius:.4em;border:1.5px solid rgba(255,255,255,.55);box-shadow:0 0 0 1px rgba(0,0,0,.35);vertical-align:-.35em;margin:0 2px}
+.tk.o{display:inline-block;min-width:1.3em;text-align:center;font-weight:800;color:var(--acc);margin:0 1px}
+.tk.bad{outline:2px solid var(--bad);outline-offset:1px;border-radius:6px}
+#send{background:var(--acc);color:#1b1b1d;border:0;border-radius:23px;height:46px;padding:0 22px;font-weight:800;font-size:1rem;font-family:inherit;cursor:pointer;transition:filter .12s}
 #send:hover{filter:brightness(1.08)}
-.hint{padding:0 14px 10px;color:var(--mute);font-size:.75rem}
+.hint{padding:0 16px 10px;color:var(--mute);font-size:.78rem;min-height:1.6em}
+.hint.warn{color:var(--bad)}
+.hint.nudge{animation:nudge .35s}
+@keyframes nudge{30%{transform:translateX(-4px);color:var(--bad)}60%{transform:translateX(4px)}}
+@media (prefers-reduced-motion:reduce){.hint.nudge{animation:none}}
 </style>
 </head>
 <body>
 <div class="app">
-  <h1>Extended Color UTF-8<span>type a pigment formula, send a color</span></h1>
+  <h1>Extended Color UTF-8<span>color, operator, color</span></h1>
 
   <section class="table" aria-label="Extended character table">
     <h2>Extended character table</h2>
@@ -60,10 +72,10 @@ h1 span{color:var(--mute);font-weight:400;font-size:.9rem;margin-left:8px}
     <div id="feed" aria-live="polite"></div>
     <div id="preview"></div>
     <div class="bar">
-      <input id="msg" autocomplete="off" placeholder="Try [Yellow]+[Yellow]+[Red]-[Yellow] 🎨" aria-label="Message">
+      <div id="msg" contenteditable="true" role="textbox" aria-label="Message" data-ph="Write a message, or tap colors above…" spellcheck="false"></div>
       <button id="send">Send</button>
     </div>
-    <div class="hint">Each pigment adds one part, each − removes one part. Order doesn’t matter.</div>
+    <div class="hint" id="hint"></div>
   </section>
 </div>
 
@@ -77,7 +89,6 @@ const P = {
   White:{hex:"#FFFFFF"},
   Black:{hex:"#000000"}
 };
-// RYB cube corners (r,y,b): white, blue, yellow, green, red, purple, orange, black
 const CUBE={"000":[255,255,255],"001":[41,95,153],"010":[255,255,0],"011":[0,168,51],
 "100":[255,0,0],"101":[128,0,128],"110":[255,128,0],"111":[51,24,0]};
 function rybToRgb(r,y,b){
@@ -90,78 +101,164 @@ function rybToRgb(r,y,b){
 }
 const hex=c=>"#"+c.map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,"0")).join("").toUpperCase();
 const NAMES="Yellow|Red|Blue|Cyan|Magenta|White|Black";
-const FORMULA=new RegExp("\\[(?:"+NAMES+")\\](?:\\s*[+\\-]\\s*\\[(?:"+NAMES+")\\])*","gi");
-const TERM=new RegExp("([+\\-])?\\s*\\[("+NAMES+")\\]","gi");
-const norm=s=>s[0].toUpperCase()+s.slice(1).toLowerCase();
+const TERM=new RegExp("([+\\-])?\\s*\\[("+NAMES+")\\]","g");
 
+// formula string like "[Yellow]+[Red]-[Yellow]" -> HEX (null if nothing is left)
 function mix(formula){
-  const w={}; let m;
-  TERM.lastIndex=0;
-  while((m=TERM.exec(formula))){
-    const n=norm(m[2]); w[n]=(w[n]||0)+(m[1]==="-"?-1:1);
-  }
+  const w={}; let m; TERM.lastIndex=0;
+  while((m=TERM.exec(formula))) w[m[2]]=(w[m[2]]||0)+(m[1]==="-"?-1:1);
   const act=Object.entries(w).filter(([,v])=>v>0);
-  if(!act.length) return null;               // everything cancelled out
-  if(act.length===1) return P[act[0][0]].hex; // a single pigment stays pure
+  if(!act.length) return null;
+  if(act.length===1) return P[act[0][0]].hex;
   let wc=0,ww=0,wb=0,ryb=[0,0,0];
   for(const [n,v] of act){
     if(n==="White") ww+=v; else if(n==="Black") wb+=v;
     else{ wc+=v; for(let i=0;i<3;i++) ryb[i]+=v*P[n].ryb[i]; }
   }
-  const tot=wc+ww+wb;
-  const C=wc?rybToRgb(...ryb.map(x=>x/wc)):[0,0,0];
+  const tot=wc+ww+wb, C=wc?rybToRgb(...ryb.map(x=>x/wc)):[0,0,0];
   return hex([0,1,2].map(i=>(wc*C[i]+ww*255)/tot));
 }
 
-const $=id=>document.getElementById(id);
+const $=id=>document.getElementById(id), msg=$("msg"), WS=/^[\s\u200b]*$/;
 const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const swatch=h=>`<span class="sw" tabindex="0" style="background:${h}" data-hex="${h}" title="${h}"></span>`;
+const swatch=h=>h?`<span class="sw" tabindex="0" style="background:${h}" data-hex="${h}" title="${h}"></span>`
+  :`<span class="sw nil" tabindex="0" data-hex="no pigment left" title="no pigment left"></span>`;
 
 // character table
 const grid=$("grid");
-Object.entries(P).forEach(([n,p])=>{
-  grid.insertAdjacentHTML("beforeend",`<button class="cell" data-ins="[${n}]"><i style="background:${p.hex}"></i>${n}<small>${p.hex}</small></button>`);
-});
-grid.insertAdjacentHTML("beforeend",`<span class="sep"></span><button class="cell op" data-ins="+" aria-label="Add">+</button><button class="cell op" data-ins="-" aria-label="Subtract">−</button>`);
+Object.entries(P).forEach(([n,p])=>grid.insertAdjacentHTML("beforeend",
+  `<button class="cell" data-c="${n}"><i style="background:${p.hex}"></i>${n}<small>${p.hex}</small></button>`));
+grid.insertAdjacentHTML("beforeend",`<span class="sep"></span><button class="cell op" data-o="+" aria-label="Add">+</button><button class="cell op" data-o="-" aria-label="Subtract">−</button>`);
+grid.addEventListener("mousedown",e=>{if(e.target.closest(".cell")) e.preventDefault();});
 grid.addEventListener("click",e=>{
-  const b=e.target.closest("[data-ins]"); if(!b) return;
-  const i=$("msg"),s=i.selectionStart??i.value.length,t=i.selectionEnd??s;
-  i.value=i.value.slice(0,s)+b.dataset.ins+i.value.slice(t);
-  const pos=s+b.dataset.ins.length; i.focus(); i.setSelectionRange(pos,pos); update();
+  const b=e.target.closest(".cell"); if(!b) return;
+  const ok=b.dataset.c?insert("c",b.dataset.c):insert("o",b.dataset.o);
+  if(!ok) nudge();
 });
 
-// live preview
-function update(){
-  const pv=$("preview"), found=$("msg").value.match(FORMULA)||[];
-  const items=found.map(f=>{const h=mix(f);return h?`<span class="p">${swatch(h)}<code>${h}</code></span>`:`<span class="p"><code>${esc(f)} → nothing left</code></span>`});
-  pv.innerHTML=items.join("");
-  pv.classList.toggle("on",items.length>0);
+// ---- composer helpers ----
+function tokEl(kind,k){
+  const s=document.createElement("span");
+  s.className="tk "+kind; s.contentEditable="false"; s.dataset.k=k;
+  if(kind==="c"){s.style.background=P[k].hex; s.title=k+" "+P[k].hex; s.setAttribute("aria-label",k);}
+  else s.textContent=k==="-"?"−":"+";
+  return s;
 }
-$("msg").addEventListener("input",update);
+function kindOf(n){
+  if(!n) return null;
+  if(n.nodeType===3) return WS.test(n.data)?"skip":"t";
+  if(n.classList&&n.classList.contains("tk")) return n.classList.contains("c")?"c":"o";
+  return "skip";
+}
+// what sits just before / after the caret: "c" color, "o" operator, "t" text, null edge
+function ctx(){
+  const s=getSelection(), kids=msg.childNodes;
+  let node=msg, off=kids.length;
+  if(s.rangeCount&&(s.anchorNode===msg||s.anchorNode.parentNode===msg)){node=s.anchorNode;off=s.anchorOffset;}
+  let lo,hi,pt="",nt="";
+  if(node.nodeType===3){const i=[...kids].indexOf(node);pt=node.data.slice(0,off);nt=node.data.slice(off);lo=i-1;hi=i+1;}
+  else{lo=off-1;hi=off;}
+  let p=null,n=null;
+  if(!WS.test(pt)) p="t"; else for(let i=lo;i>=0;i--){const k=kindOf(kids[i]);if(k!=="skip"){p=k;break;}}
+  if(!WS.test(nt)) n="t"; else for(let i=hi;i<kids.length;i++){const k=kindOf(kids[i]);if(k!=="skip"){n=k;break;}}
+  return {p,n};
+}
+const canColor=({p,n})=>p!=="c"&&n!=="c";
+const canOp=({p,n})=>p==="c"&&n!=="o";
 
-// send
-function render(text){
-  let out="",last=0,m;
-  FORMULA.lastIndex=0;
-  while((m=FORMULA.exec(text))){
-    out+=esc(text.slice(last,m.index));
-    const h=mix(m[0]); out+=h?swatch(h):"";
-    last=m.index+m[0].length;
-  }
-  return out+esc(text.slice(last));
+function insert(kind,k){
+  const had=document.activeElement===msg, s=getSelection();
+  let r;
+  if(had&&s.rangeCount&&(s.anchorNode===msg||s.anchorNode.parentNode===msg)) r=s.getRangeAt(0);
+  else{r=document.createRange();r.selectNodeContents(msg);r.collapse(false);}
+  msg.focus();
+  if(!r.collapsed) r.deleteContents();
+  s.removeAllRanges(); s.addRange(r);
+  const c=ctx();
+  if(!(kind==="c"?canColor(c):canOp(c))) return false;
+  const t=tokEl(kind,k); r.insertNode(t);
+  let nx=t.nextSibling;
+  if(!nx||nx.nodeType!==3){nx=document.createTextNode("\u200b");t.after(nx);}
+  r=document.createRange(); r.setStart(nx,0); r.collapse(true);
+  s.removeAllRanges(); s.addRange(r);
+  update(); return true;
 }
+
+// split the composer into text pieces and token runs (color/operator chains)
+function segments(){
+  const segs=[]; let run=null, pend="";
+  const close=()=>{if(run){segs.push({run});run=null;}};
+  for(const n of msg.childNodes){
+    if(n.nodeType===3){
+      const v=n.data.replace(/\u200b/g,""); if(!v) continue;
+      if(/^\s*$/.test(v)&&run){pend+=v;continue;}
+      close(); segs.push({text:pend+v}); pend="";
+    }else if(n.classList&&n.classList.contains("tk")){
+      if(!run) run={toks:[]};
+      run.toks.push(n); pend="";
+    }
+  }
+  close(); return segs;
+}
+function runInfo(run){
+  const kinds=run.toks.map(t=>t.classList.contains("c")?"c":"o");
+  const ok=kinds.length%2===1&&kinds.every((k,i)=>k===(i%2?"o":"c"));
+  const formula=run.toks.map(t=>t.classList.contains("c")?`[${t.dataset.k}]`:t.dataset.k).join("");
+  return {ok,formula};
+}
+
+let valid=true;
+function update(){
+  if(!msg.querySelector(".tk")&&WS.test(msg.textContent)) msg.innerHTML="";
+  msg.querySelectorAll(".bad").forEach(x=>x.classList.remove("bad"));
+  const items=[]; valid=true;
+  segments().forEach(sg=>{
+    if(!sg.run) return;
+    const inf=runInfo(sg.run);
+    if(!inf.ok){valid=false;sg.run.toks.forEach(t=>t.classList.add("bad"));items.push(`<span class="p warn">Incomplete formula</span>`);}
+    else{const h=mix(inf.formula);items.push(h?`<span class="p">${swatch(h)}<code>${h}</code></span>`:`<span class="p">${swatch(null)}<code>cancels out</code></span>`);}
+  });
+  $("preview").innerHTML=items.join(""); $("preview").classList.toggle("on",items.length>0);
+  const c=ctx();
+  grid.querySelectorAll("[data-c]").forEach(b=>b.toggleAttribute("data-off",!canColor(c)));
+  grid.querySelectorAll("[data-o]").forEach(b=>b.toggleAttribute("data-off",!canOp(c)));
+  const h=$("hint");
+  h.classList.toggle("warn",!valid);
+  h.textContent=!valid?"Finish the formula: color, operator, color. Remove the stray operator or add a color."
+    :c.p==="c"?"Next: + or − to keep mixing, or keep typing text."
+    :c.p==="o"?"Next: pick a color."
+    :"A formula goes color, operator, color. Start with a color.";
+}
+function nudge(){const h=$("hint");h.classList.remove("nudge");void h.offsetWidth;h.classList.add("nudge");}
+
+msg.addEventListener("beforeinput",e=>{
+  if(e.inputType==="insertText"&&["+","-","−"].includes(e.data)){
+    e.preventDefault(); if(!insert("o",e.data==="+"?"+":"-")) nudge();
+  }
+});
+msg.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.isComposing){e.preventDefault();send();}});
+msg.addEventListener("paste",e=>{e.preventDefault();document.execCommand("insertText",false,(e.clipboardData.getData("text")||"").replace(/\s+/g," "));});
+msg.addEventListener("drop",e=>e.preventDefault());
+msg.addEventListener("input",update);
+document.addEventListener("selectionchange",()=>{if(document.activeElement===msg) update();});
+
+// ---- chat ----
 function add(html,who){
   const d=document.createElement("div"); d.className="b "+who; d.innerHTML=html;
   $("feed").appendChild(d); $("feed").scrollTop=$("feed").scrollHeight;
 }
 function send(){
-  const v=$("msg").value.trim(); if(!v) return;
-  add(render(v),"me"); $("msg").value=""; update();
+  update();
+  const segs=segments();
+  if(!segs.some(s=>s.run||s.text.trim())) return;
+  if(!valid){nudge();return;}
+  add(segs.map(s=>s.run?swatch(mix(runInfo(s.run).formula)):esc(s.text)).join(""),"me");
+  msg.innerHTML=""; update(); msg.focus();
 }
 $("send").addEventListener("click",send);
-$("msg").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();send();}});
 
-add("Pick pigments from the table above and combine them with + and −. Your formula turns into a color swatch when you send it. Try <b>[Blue]+[Yellow]</b> or <b>[Red]+[White]</b>.","bot");
+add("Tap a color, then <b>+</b> or <b>−</b>, then another color. A formula is sent as one colored square.","bot");
+update();
 </script>
 </body>
 </html>
